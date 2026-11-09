@@ -3,155 +3,261 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3x3 Photo Merge Video Generator</title>
+<title>3x3 Photo Merge Video Maker</title>
 <style>
-  body { font-family: system-ui, sans-serif; background: #121212; color: #f5f5f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-  .panel { background: #1e1e1e; padding: 18px; border-radius: 12px; max-width: 540px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #333; }
-  h2 { margin-top: 0; font-size: 1.2rem; }
-  .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  label { font-size: 0.82rem; color: #ccc; display: block; margin-bottom: 4px; }
-  input[type="file"] { width: 100%; font-size: 0.78rem; color: #aaa; }
-  .btn-row { display: flex; gap: 10px; margin-top: 12px; }
-  button { flex: 1; padding: 10px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #121212; color: #f5f5f5; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+  .panel { background: #1e1e1e; padding: 16px; border-radius: 12px; max-width: 540px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #333; }
+  h2 { margin: 0 0 12px 0; font-size: 1.15rem; }
+  .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .slot-card { background: #262626; padding: 8px 10px; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; align-items: center; gap: 8px; }
+  .thumb { width: 38px; height: 38px; border-radius: 6px; background: #fff; object-fit: contain; flex-shrink: 0; border: 1px solid #444; }
+  .slot-info { flex: 1; overflow: hidden; }
+  label { font-size: 0.78rem; font-weight: 600; color: #ddd; display: block; margin-bottom: 3px; }
+  input[type="file"] { width: 100%; font-size: 0.72rem; color: #aaa; }
+  .audio-bar { background: #262626; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; color: #34d399; border: 1px solid #065f46; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .audio-bar.error { color: #f87171; border-color: #7f1d1d; }
+  .btn-row { display: flex; gap: 10px; }
+  button { flex: 1; padding: 11px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
   #previewBtn { background: #3b82f6; color: #fff; }
   #recordBtn { background: #10b981; color: #fff; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   canvas { background: #ffffff; border-radius: 8px; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
-  #status { font-size: 0.85rem; color: #fbbf24; margin-top: 8px; min-height: 1.2em; }
+  #status { font-size: 0.84rem; color: #fbbf24; margin-top: 10px; min-height: 1.2em; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="panel">
   <h2>3×3 Photo Merge Video Generator</h2>
+
   <div class="grid-inputs">
-    <div><label>Photo 1 (Baby PNG/Photo)</label><input type="file" id="p1" accept="image/*"></div>
-    <div><label>Photo 2 (Kid PNG/Photo)</label><input type="file" id="p2" accept="image/*"></div>
-    <div><label>Photo 3 (Pre-teen Square)</label><input type="file" id="p3" accept="image/*"></div>
-    <div><label>Photo 4 (Teen PNG/Photo)</label><input type="file" id="p4" accept="image/*"></div>
-    <div><label>Photo 5 (Close-up Square)</label><input type="file" id="p5" accept="image/*"></div>
-    <div><label>Photo 6 (Final Full Photo)</label><input type="file" id="p6" accept="image/*"></div>
+    <div class="slot-card">
+      <img id="t1" class="thumb" alt="P1">
+      <div class="slot-info"><label>Photo 1 (Baby Cutout)</label><input type="file" id="p1" accept="image/*"></div>
+    </div>
+    <div class="slot-card">
+      <img id="t2" class="thumb" alt="P2">
+      <div class="slot-info"><label>Photo 2 (Kid Cutout)</label><input type="file" id="p2" accept="image/*"></div>
+    </div>
+    <div class="slot-card">
+      <img id="t3" class="thumb" alt="P3">
+      <div class="slot-info"><label>Photo 3 (Pre-teen 1:1)</label><input type="file" id="p3" accept="image/*"></div>
+    </div>
+    <div class="slot-card">
+      <img id="t4" class="thumb" alt="P4">
+      <div class="slot-info"><label>Photo 4 (Teen Cutout)</label><input type="file" id="p4" accept="image/*"></div>
+    </div>
+    <div class="slot-card">
+      <img id="t5" class="thumb" alt="P5">
+      <div class="slot-info"><label>Photo 5 (Close-up 1:1)</label><input type="file" id="p5" accept="image/*"></div>
+    </div>
+    <div class="slot-card">
+      <img id="t6" class="thumb" alt="P6">
+      <div class="slot-info"><label>Photo 6 (Final Full 1:1)</label><input type="file" id="p6" accept="image/*"></div>
+    </div>
   </div>
-  <div>
-    <label>Reference Video / Audio (Upload the original MP4 for sound sync)</label>
-    <input type="file" id="audioSource" accept="video/*,audio/*">
+
+  <div id="audioStatus" class="audio-bar">
+    <span>Audio Source: <b>audio.mp3</b> (Local Folder)</span>
+    <span id="audioState">Checking...</span>
   </div>
+
   <div class="btn-row">
-    <button id="previewBtn">Preview Animation</button>
-    <button id="recordBtn">Record & Download Video</button>
+    <button id="previewBtn">Preview with Audio</button>
+    <button id="recordBtn">Record & Export Video</button>
   </div>
-  <div id="status">Upload your 6 photos to begin.</div>
+  <div id="status">Pick your 6 photos from the gallery to start.</div>
 </div>
 
 <canvas id="stage" width="720" height="720"></canvas>
-<video id="refMedia" style="display:none" crossorigin="anonymous"></video>
+<!-- Automatically loads audio.mp3 from the same folder -->
+<audio id="bgAudio" src="audio.mp3" preload="auto"></audio>
 
 <script>
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
 const statusEl = document.getElementById('status');
-const refMedia = document.getElementById('refMedia');
+const bgAudio = document.getElementById('bgAudio');
+const audioStatus = document.getElementById('audioStatus');
+const audioState = document.getElementById('audioState');
 const images = {};
+
+bgAudio.addEventListener('loadedmetadata', () => {
+  audioStatus.classList.remove('error');
+  audioState.textContent = `Ready (${bgAudio.duration.toFixed(1)}s) ✓`;
+});
+
+bgAudio.addEventListener('error', () => {
+  audioStatus.classList.add('error');
+  audioState.textContent = 'audio.mp3 not found in folder!';
+});
 
 for (let i = 1; i <= 6; i++) {
   document.getElementById('p' + i).addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    document.getElementById('t' + i).src = url;
     const img = new Image();
-    img.onload = () => { images[i] = img; drawFrame(0); };
-    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      images[i] = img;
+      drawFrame(0);
+    };
+    img.src = url;
   });
 }
 
-document.getElementById('audioSource').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) refMedia.src = URL.createObjectURL(file);
-});
-
-const SLOT_COORDS = {
+const SLOTS = {
   TL: [0, 0], TC: [1, 0], TR: [2, 0],
   ML: [0, 1], MC: [1, 1], MR: [2, 1],
   BL: [0, 2], BC: [1, 2], BR: [2, 2]
 };
 
-// Exact 34.7s choreography matching the reference video
-const EVENTS = [
-  { t: 0.0, board: { TC:2, TR:1, ML:1, MC:1, MR:1, BL:1, BC:1, BR:1 } },
-  { t: 0.1, move: ['ML', 'MC', 1, 2, 0.85] },
-  { t: 1.1, move: ['BL', 'BC', 1, 2, 0.85] },
-  { t: 2.1, move: ['TC', 'MC', 2, 3, 0.85] },
-  { t: 3.1, move: ['TR', 'MR', 1, 2, 0.85] },
-  { t: 4.1, move: ['BC', 'MR', 2, 3, 0.85] },
-  { t: 5.1, move: ['MR', 'MC', 3, 4, 0.85] },
+// Frame-accurate choreography synced to the 34.7s audio.mp3 cues
+const TIMELINE = [
+  // ROUND 1 (0:00.0 - 0:06.0)
+  { type: 'board', t: 0.00, state: { TC:2, TR:1, ML:1, MC:1, MR:1, BL:1, BC:1, BR:1 } },
+  { type: 'move',  t: 0.05, dur: 0.85, from: 'ML', to: 'MC', lvl: 1, next: 2 },
+  { type: 'move',  t: 1.05, dur: 0.85, from: 'BL', to: 'BC', lvl: 1, next: 2 },
+  { type: 'move',  t: 2.05, dur: 0.85, from: 'TC', to: 'MC', lvl: 2, next: 3 },
+  { type: 'move',  t: 3.05, dur: 0.85, from: 'TR', to: 'MR', lvl: 1, next: 2 },
+  { type: 'move',  t: 4.05, dur: 0.85, from: 'BC', to: 'MR', lvl: 2, next: 3 },
+  { type: 'move',  t: 5.05, dur: 0.85, from: 'MR', to: 'MC', lvl: 3, next: 4 },
 
-  { t: 6.8, board: { TL:1, TC:1, TR:1, ML:1, MC:4, MR:1, BL:1, BC:1, BR:1 } },
-  { t: 7.0, move: ['TC', 'TR', 1, 2, 0.85] },
-  { t: 8.0, move: ['MR', 'BR', 1, 2, 0.45] },
-  { t: 8.5, move: ['TR', 'BR', 2, 3, 0.45] },
-  { t: 9.1, move: ['BC', 'BL', 1, 2, 0.85] },
-  { t: 10.1, move: ['ML', 'TL', 1, 2, 0.85] },
-  { t: 11.1, move: ['BL', 'TL', 2, 3, 0.85] },
-  { t: 12.1, move: ['BR', 'TL', 3, 4, 0.85] },
-  { t: 13.1, move: ['TL', 'MC', 4, 5, 0.85] },
+  // ROUND 2: "Woo hoo hoo!" spawn (0:06.2) + 8 merges (0:06.8 - 0:14.0)
+  { type: 'spawn', t: 6.20, dur: 0.50, cells: ['TL','TC','TR','ML','MR','BL','BC'], lvl: 1 },
+  { type: 'move',  t: 6.80, dur: 0.80, from: 'TC', to: 'TR', lvl: 1, next: 2 },
+  { type: 'move',  t: 7.70, dur: 0.80, from: 'MR', to: 'BR', lvl: 1, next: 2 },
+  { type: 'move',  t: 8.55, dur: 0.80, from: 'TR', to: 'BR', lvl: 2, next: 3 },
+  { type: 'move',  t: 9.40, dur: 0.80, from: 'BC', to: 'BL', lvl: 1, next: 2 },
+  { type: 'move',  t: 10.25, dur: 0.80, from: 'ML', to: 'TL', lvl: 1, next: 2 },
+  { type: 'move',  t: 11.10, dur: 0.80, from: 'BL', to: 'TL', lvl: 2, next: 3 },
+  { type: 'move',  t: 12.00, dur: 0.85, from: 'BR', to: 'TL', lvl: 3, next: 4 },
+  { type: 'move',  t: 13.00, dur: 0.85, from: 'TL', to: 'MC', lvl: 4, next: 5 },
 
-  { t: 14.8, board: { TL:1, TC:1, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1, BR:1 } },
-  { t: 15.1, move: ['TL', 'ML', 1, 2, 0.85] },
-  { t: 16.1, move: ['BL', 'BC', 1, 2, 0.85] },
-  { t: 17.1, move: ['BR', 'MR', 1, 2, 0.85] },
-  { t: 18.1, move: ['TR', 'TC', 1, 2, 0.85] },
-  { t: 19.1, move: ['ML', 'BC', 2, 3, 0.85] },
-  { t: 20.1, move: ['MR', 'TC', 2, 3, 0.85] },
-  { t: 21.1, move: ['BC', 'TC', 3, 4, 0.85] },
+  // ROUND 3: "Woo hoo hoo!" spawn (0:14.2) + 7 diamond merges (0:15.0 - 0:21.6)
+  { type: 'spawn', t: 14.20, dur: 0.65, cells: ['TL','TC','TR','ML','MR','BL','BC','BR'], lvl: 1 },
+  { type: 'move',  t: 15.05, dur: 0.85, from: 'TL', to: 'ML', lvl: 1, next: 2 },
+  { type: 'move',  t: 16.00, dur: 0.85, from: 'BL', to: 'BC', lvl: 1, next: 2 },
+  { type: 'move',  t: 16.95, dur: 0.85, from: 'BR', to: 'MR', lvl: 1, next: 2 },
+  { type: 'move',  t: 17.90, dur: 0.85, from: 'TR', to: 'TC', lvl: 1, next: 2 },
+  { type: 'move',  t: 18.85, dur: 0.85, from: 'ML', to: 'BC', lvl: 2, next: 3 },
+  { type: 'move',  t: 19.80, dur: 0.85, from: 'MR', to: 'TC', lvl: 2, next: 3 },
+  { type: 'move',  t: 20.75, dur: 0.85, from: 'BC', to: 'TC', lvl: 3, next: 4 },
 
-  { t: 22.2, board: { TL:1, TC:4, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1 } },
-  { t: 23.0, board: { TL:2, TC:4, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1 } },
-  { t: 23.1, move: ['TR', 'MR', 1, 2, 0.85] },
-  { t: 24.1, move: ['BC', 'ML', 1, 2, 0.85] },
-  { t: 25.1, move: ['MR', 'TL', 2, 3, 0.85] },
-  { t: 27.2, board: { TL:3, TC:4, ML:2, MC:5, BL:1, BC:1 } },
-  { t: 28.1, move: ['BC', 'BL', 1, 2, 0.85] },
-  { t: 29.1, move: ['BL', 'ML', 2, 3, 0.85] },
-  { t: 30.1, move: ['ML', 'TL', 3, 4, 0.85] },
-  { t: 31.1, move: ['TL', 'TC', 4, 5, 0.85] },
-  { t: 32.1, move: ['TC', 'MC', 5, 6, 0.85] }
+  // ROUND 4: "Woo hoo hoo!" spawn (0:21.7), merges, "Xiannu xiafan" fade-in (0:26.8), final merge (0:33.0)
+  { type: 'spawn', t: 21.70, dur: 0.70, cells: ['TL','TR','ML','MR','BL','BC','BR'], lvl: 1 },
+  { type: 'move',  t: 22.50, dur: 0.85, from: 'BR', to: 'TL', lvl: 1, next: 2 },
+  { type: 'move',  t: 23.40, dur: 0.80, from: 'TR', to: 'MR', lvl: 1, next: 2 },
+  { type: 'move',  t: 24.25, dur: 0.80, from: 'BC', to: 'ML', lvl: 1, next: 2 },
+  { type: 'move',  t: 25.10, dur: 0.85, from: 'MR', to: 'TL', lvl: 2, next: 3 },
+
+  // "Xiannu xiafan" voice line: bonus Photo 1 fades in at BC
+  { type: 'fadein', t: 26.80, dur: 1.50, cell: 'BC', lvl: 1 },
+
+  { type: 'move',  t: 28.45, dur: 0.85, from: 'BC', to: 'BL', lvl: 1, next: 2 },
+  { type: 'move',  t: 29.40, dur: 0.85, from: 'BL', to: 'ML', lvl: 2, next: 3 },
+  { type: 'move',  t: 30.35, dur: 0.85, from: 'ML', to: 'TL', lvl: 3, next: 4 },
+  { type: 'move',  t: 31.30, dur: 0.85, from: 'TL', to: 'TC', lvl: 4, next: 5 },
+  { type: 'move',  t: 32.20, dur: 0.80, from: 'TC', to: 'MC', lvl: 5, next: 6 }
 ];
 
-function getStateAtTime(sec) {
+function easeInOut(p) {
+  return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+}
+
+function getSceneAtTime(sec) {
   let board = {};
   let activeMove = null;
-  for (const ev of EVENTS) {
-    if (sec >= ev.t) {
-      if (ev.board) board = { ...ev.board };
-      if (ev.move) {
-        const [from, to, lvl, nextLvl, dur] = ev.move;
-        if (sec < ev.t + dur) {
-          delete board[from];
-          activeMove = { from, to, lvl, p: (sec - ev.t) / dur };
-        } else {
-          delete board[from];
-          board[to] = nextLvl;
+  let cellAlpha = {};
+  let cellScale = {};
+
+  for (const ev of TIMELINE) {
+    if (sec < ev.t) continue;
+
+    if (ev.type === 'board') {
+      board = { ...ev.state };
+    } else if (ev.type === 'spawn') {
+      ev.cells.forEach((c, idx) => {
+        const delay = (idx / ev.cells.length) * (ev.dur * 0.6);
+        const localT = sec - (ev.t + delay);
+        if (localT >= 0) {
+          board[c] = ev.lvl;
+          if (localT < 0.25) {
+            cellScale[c] = 0.3 + 0.7 * (localT / 0.25);
+          }
         }
+      });
+    } else if (ev.type === 'fadein') {
+      board[ev.cell] = ev.lvl;
+      if (sec < ev.t + ev.dur) {
+        cellAlpha[ev.cell] = Math.max(0, Math.min(1, (sec - ev.t) / ev.dur));
+      }
+    } else if (ev.type === 'move') {
+      if (sec < ev.t + ev.dur) {
+        delete board[ev.from];
+        activeMove = {
+          from: ev.from,
+          to: ev.to,
+          lvl: ev.lvl,
+          p: easeInOut((sec - ev.t) / ev.dur)
+        };
+      } else {
+        delete board[ev.from];
+        board[ev.to] = ev.next;
       }
     }
   }
-  return { board, activeMove };
+  return { board, activeMove, cellAlpha, cellScale };
 }
 
-function drawPhoto(lvl, x, y, size) {
+function drawPhoto(lvl, x, y, size, alpha = 1, scaleFactor = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  if (scaleFactor !== 1) {
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    ctx.translate(cx, cy);
+    ctx.scale(scaleFactor, scaleFactor);
+    ctx.translate(-cx, -cy);
+  }
+
   const img = images[lvl];
   if (!img) {
-    ctx.fillStyle = '#e5e7eb';
-    ctx.fillRect(x + 12, y + 12, size - 24, size - 24);
-    ctx.fillStyle = '#374151';
-    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(x + 10, y + 10, size - 20, size - 20);
+    ctx.strokeStyle = '#d1d5db';
+    ctx.strokeRect(x + 10, y + 10, size - 20, size - 20);
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('P' + lvl, x + size / 2, y + size / 2 + 10);
+    ctx.fillText('Photo ' + lvl, x + size / 2, y + size / 2 + 8);
+    ctx.restore();
     return;
   }
-  const scale = Math.min(size / img.width, size / img.height);
-  const w = img.width * scale;
-  const h = img.height * scale;
-  ctx.drawImage(img, x + (size - w) / 2, y + (size - h) / 2, w, h);
+
+  // Photos 3, 5, 6 are square crops; Photos 1, 2, 4 fit cleanly inside the slot
+  const pad = (lvl === 6) ? 0 : 8;
+  const box = size - pad * 2;
+  const bx = x + pad;
+  const by = y + pad;
+
+  if (lvl === 3 || lvl === 5 || lvl === 6) {
+    const s = Math.max(box / img.width, box / img.height);
+    const sw = box / s;
+    const sh = box / s;
+    const sx = (img.width - sw) / 2;
+    const sy = (img.height - sh) / 2;
+    ctx.drawImage(img, sx, sy, sw, sh, bx, by, box, box);
+  } else {
+    const s = Math.min(box / img.width, box / img.height);
+    const w = img.width * s;
+    const h = img.height * s;
+    ctx.drawImage(img, bx + (box - w) / 2, by + (box - h) / 2, w, h);
+  }
+
+  ctx.restore();
 }
 
 function drawFrame(sec) {
@@ -159,22 +265,27 @@ function drawFrame(sec) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   const cell = canvas.width / 3;
 
-  if (sec >= 32.95) {
-    const expandP = Math.min(1, (sec - 32.95) / 0.35);
+  // Final Photo 6 full-screen expansion (0:33.0 -> 0:34.7)
+  if (sec >= 33.0) {
+    const expandP = Math.min(1, easeInOut((sec - 33.0) / 0.35));
     const size = cell + (canvas.width - cell) * expandP;
     const pos = (canvas.width - size) / 2;
     drawPhoto(6, pos, pos, size);
     return;
   }
 
-  const { board, activeMove } = getStateAtTime(sec);
+  const { board, activeMove, cellAlpha, cellScale } = getSceneAtTime(sec);
+
   for (const [slot, lvl] of Object.entries(board)) {
-    const [gx, gy] = SLOT_COORDS[slot];
-    drawPhoto(lvl, gx * cell, gy * cell, cell);
+    const [gx, gy] = SLOTS[slot];
+    const alpha = cellAlpha[slot] !== undefined ? cellAlpha[slot] : 1;
+    const sc = cellScale[slot] !== undefined ? cellScale[slot] : 1;
+    drawPhoto(lvl, gx * cell, gy * cell, cell, alpha, sc);
   }
+
   if (activeMove) {
-    const [fx, fy] = SLOT_COORDS[activeMove.from];
-    const [tx, ty] = SLOT_COORDS[activeMove.to];
+    const [fx, fy] = SLOTS[activeMove.from];
+    const [tx, ty] = SLOTS[activeMove.to];
     const cx = (fx + (tx - fx) * activeMove.p) * cell;
     const cy = (fy + (ty - fy) * activeMove.p) * cell;
     drawPhoto(activeMove.lvl, cx, cy, cell);
@@ -182,39 +293,56 @@ function drawFrame(sec) {
 }
 
 let animId = null;
-function runTimeline(onComplete) {
+function startPlayback(onComplete) {
   cancelAnimationFrame(animId);
-  const duration = 34.7;
-  const start = performance.now();
-  if (refMedia.src) {
-    refMedia.currentTime = 0;
-    refMedia.play().catch(() => {});
-  }
-  function tick(now) {
-    const elapsed = (now - start) / 1000;
+  const totalDuration = 34.7;
+  const startWall = performance.now();
+  let usingAudioClock = false;
+
+  bgAudio.currentTime = 0;
+  bgAudio.play().then(() => {
+    usingAudioClock = true;
+  }).catch(() => {
+    usingAudioClock = false;
+  });
+
+  function loop(now) {
+    const elapsed = (usingAudioClock && !bgAudio.paused)
+      ? bgAudio.currentTime
+      : (now - startWall) / 1000;
+
     drawFrame(elapsed);
-    statusEl.textContent = `Playing: ${elapsed.toFixed(1)}s / ${duration}s`;
-    if (elapsed < duration) {
-      animId = requestAnimationFrame(tick);
+    statusEl.textContent = `Playing: ${elapsed.toFixed(1)}s / ${totalDuration}s`;
+
+    if (elapsed < totalDuration && (!usingAudioClock || !bgAudio.ended)) {
+      animId = requestAnimationFrame(loop);
     } else {
-      if (refMedia.src) refMedia.pause();
-      statusEl.textContent = 'Completed (34.7s).';
+      bgAudio.pause();
+      drawFrame(totalDuration);
+      statusEl.textContent = 'Finished (34.7s)!';
       if (onComplete) onComplete();
     }
   }
-  animId = requestAnimationFrame(tick);
+  animId = requestAnimationFrame(loop);
 }
 
-document.getElementById('previewBtn').addEventListener('click', () => runTimeline());
+document.getElementById('previewBtn').addEventListener('click', () => startPlayback());
 
-document.getElementById('recordBtn').addEventListener('click', async () => {
+document.getElementById('recordBtn').addEventListener('click', () => {
   const stream = canvas.captureStream(30);
-  if (refMedia.src && refMedia.captureStream) {
-    const mediaStream = refMedia.captureStream();
-    mediaStream.getAudioTracks().forEach(t => stream.addTrack(t));
+  try {
+    const audioStream = bgAudio.captureStream ? bgAudio.captureStream() : (bgAudio.mozCaptureStream ? bgAudio.mozCaptureStream() : null);
+    if (audioStream) {
+      audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
+    }
+  } catch (e) {
+    console.warn('Audio stream capture requires opening via local server if restricted by browser:', e);
   }
-  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+  const recorder = new MediaRecorder(stream, { mimeType });
   const chunks = [];
+
   recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
   recorder.onstop = () => {
     const blob = new Blob(chunks, { type: 'video/webm' });
@@ -224,9 +352,10 @@ document.getElementById('recordBtn').addEventListener('click', async () => {
     a.click();
     document.getElementById('recordBtn').disabled = false;
   };
+
   document.getElementById('recordBtn').disabled = true;
   recorder.start();
-  runTimeline(() => recorder.stop());
+  startPlayback(() => recorder.stop());
 });
 
 drawFrame(0);
