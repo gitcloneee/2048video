@@ -3,75 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Instagram Reels 60FPS Photo Merge Maker (Audio-Locked)</title>
+<title>Instagram Reels 60FPS Photo Merge Maker (Auto BG Remover)</title>
+<!-- MediaPipe AI Portrait Segmentation for client-side automatic background removal -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
 <style>
   body { font-family: system-ui, -apple-system, sans-serif; background: #0f0f11; color: #f5f5f5; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
-  .panel { background: #1a1a1e; padding: 16px; border-radius: 14px; max-width: 560px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #2e2e34; }
-  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  h2 { margin: 0; font-size: 1.08rem; }
+  .panel { background: #1a1a1e; padding: 16px; border-radius: 14px; max-width: 580px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #2e2e34; }
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
+  h2 { margin: 0; font-size: 1.06rem; }
   .pill { background: #10b981; color: #052e16; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
   .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .slot-card { background: #242429; padding: 8px 10px; border-radius: 8px; border: 1px solid #36363e; display: flex; align-items: center; gap: 8px; }
-  .thumb { width: 38px; height: 38px; border-radius: 6px; background: #fff; object-fit: contain; flex-shrink: 0; border: 1px solid #444; }
+  .slot-card { background: #242429; padding: 8px 10px; border-radius: 8px; border: 1px solid #36363e; display: flex; align-items: center; gap: 8px; position: relative; }
+  .thumb-wrap { width: 44px; height: 44px; border-radius: 6px; background: repeating-conic-gradient(#e5e7eb 0% 25%, #ffffff 0% 50%) 50% / 10px 10px; flex-shrink: 0; border: 1px solid #444; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .thumb { width: 100%; height: 100%; object-fit: contain; }
   .slot-info { flex: 1; overflow: hidden; }
-  label { font-size: 0.75rem; font-weight: 600; color: #e4e4e7; display: block; margin-bottom: 3px; }
-  input[type="file"] { width: 100%; font-size: 0.7rem; color: #a1a1aa; }
-  .options-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #242429; padding: 8px 12px; border-radius: 8px; border: 1px solid #36363e; font-size: 0.8rem; }
-  .options-row select { background: #18181b; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 5px 8px; font-size: 0.78rem; flex: 1; }
+  .slot-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  label.slot-title { font-size: 0.74rem; font-weight: 700; color: #e4e4e7; }
+  .bg-toggle { display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; color: #93c5fd; cursor: pointer; user-select: none; background: #1e293b; padding: 2px 6px; border-radius: 4px; border: 1px solid #334155; }
+  .bg-toggle input { margin: 0; accent-color: #3b82f6; cursor: pointer; }
+  input[type="file"] { width: 100%; font-size: 0.68rem; color: #a1a1aa; }
+  .options-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #242429; padding: 8px 12px; border-radius: 8px; border: 1px solid #36363e; font-size: 0.78rem; flex-wrap: wrap; }
+  .options-row select { background: #18181b; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 5px 8px; font-size: 0.76rem; flex: 1; }
   .scrub-row { display: flex; align-items: center; gap: 10px; background: #242429; padding: 8px 12px; border-radius: 8px; border: 1px solid #36363e; margin-bottom: 10px; font-size: 0.78rem; }
   .scrub-row input[type="range"] { flex: 1; accent-color: #3b82f6; cursor: pointer; }
-  .audio-bar { background: #1e2923; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; color: #34d399; border: 1px solid #065f46; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .audio-bar { background: #1e2923; padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; color: #34d399; border: 1px solid #065f46; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
   .audio-bar.error { background: #2d1a1a; color: #f87171; border-color: #7f1d1d; }
   .btn-row { display: flex; gap: 10px; }
-  button { flex: 1; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: opacity 0.15s; }
+  button { flex: 1; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.88rem; transition: opacity 0.15s; }
   #previewBtn { background: #3b82f6; color: #fff; }
   #recordBtn { background: #10b981; color: #fff; }
   button:disabled { opacity: 0.45; cursor: not-allowed; }
   .canvas-wrap { width: 100%; max-width: 340px; aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.65); border: 2px solid #2e2e34; background: #ffffff; }
   canvas { width: 100%; height: 100%; display: block; }
-  #status { font-size: 0.82rem; color: #fbbf24; margin-top: 10px; min-height: 1.2em; text-align: center; font-variant-numeric: tabular-nums; }
+  #status { font-size: 0.81rem; color: #fbbf24; margin-top: 10px; min-height: 1.2em; text-align: center; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 
 <div class="panel">
   <div class="header-row">
-    <h2>Reels 3×3 Photo Merge (Audio-Verified)</h2>
+    <h2>Reels 3×3 Photo Merge + Auto BG Remover</h2>
     <span class="pill">1080×1920 • 60 FPS</span>
   </div>
 
   <div class="grid-inputs">
+    <!-- Photo 1 (Checked by default for Cutout) -->
     <div class="slot-card">
-      <img id="t1" class="thumb" alt="P1">
-      <div class="slot-info"><label>Photo 1 (Baby Cutout)</label><input type="file" id="p1" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t1" class="thumb" alt="P1"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 1 (Baby)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg1" checked> Remove BG</label>
+        </div>
+        <input type="file" id="p1" accept="image/*">
+      </div>
     </div>
+
+    <!-- Photo 2 (Checked by default for Cutout) -->
     <div class="slot-card">
-      <img id="t2" class="thumb" alt="P2">
-      <div class="slot-info"><label>Photo 2 (Kid Cutout)</label><input type="file" id="p2" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t2" class="thumb" alt="P2"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 2 (Kid)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg2" checked> Remove BG</label>
+        </div>
+        <input type="file" id="p2" accept="image/*">
+      </div>
     </div>
+
+    <!-- Photo 3 (Unchecked by default - 1:1 Square) -->
     <div class="slot-card">
-      <img id="t3" class="thumb" alt="P3">
-      <div class="slot-info"><label>Photo 3 (Pre-teen 1:1)</label><input type="file" id="p3" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t3" class="thumb" alt="P3"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 3 (Pre-teen)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg3"> Remove BG</label>
+        </div>
+        <input type="file" id="p3" accept="image/*">
+      </div>
     </div>
+
+    <!-- Photo 4 (Checked by default for Cutout) -->
     <div class="slot-card">
-      <img id="t4" class="thumb" alt="P4">
-      <div class="slot-info"><label>Photo 4 (Teen Cutout)</label><input type="file" id="p4" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t4" class="thumb" alt="P4"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 4 (Teen)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg4" checked> Remove BG</label>
+        </div>
+        <input type="file" id="p4" accept="image/*">
+      </div>
     </div>
+
+    <!-- Photo 5 (Unchecked by default - 1:1 Square) -->
     <div class="slot-card">
-      <img id="t5" class="thumb" alt="P5">
-      <div class="slot-info"><label>Photo 5 (Close-up 1:1)</label><input type="file" id="p5" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t5" class="thumb" alt="P5"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 5 (Close-up)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg5"> Remove BG</label>
+        </div>
+        <input type="file" id="p5" accept="image/*">
+      </div>
     </div>
+
+    <!-- Photo 6 (Unchecked by default - Full Final Reveal) -->
     <div class="slot-card">
-      <img id="t6" class="thumb" alt="P6">
-      <div class="slot-info"><label>Photo 6 (Final Reveal)</label><input type="file" id="p6" accept="image/*"></div>
+      <div class="thumb-wrap"><img id="t6" class="thumb" alt="P6"></div>
+      <div class="slot-info">
+        <div class="slot-top">
+          <label class="slot-title">Photo 6 (Final)</label>
+          <label class="bg-toggle"><input type="checkbox" id="bg6"> Remove BG</label>
+        </div>
+        <input type="file" id="p6" accept="image/*">
+      </div>
     </div>
   </div>
 
   <div class="options-row">
-    <span>Final Photo 6 Reveal Mode:</span>
+    <span>BG Engine:</span>
+    <select id="bgEngine">
+      <option value="ai">AI Portrait Cutout (MediaPipe Selfie Segmentation)</option>
+      <option value="flood">Smart Corner Flood-Fill (100% Offline Eraser)</option>
+    </select>
+    <span>Final Reveal:</span>
     <select id="finalMode">
-      <option value="reels_full">Full 9:16 Reels Screen (1080×1920)</option>
-      <option value="reels_fit">Fit Full Width Inside Reels (No Crop)</option>
+      <option value="reels_full">Full 9:16 Reels (1080×1920)</option>
+      <option value="reels_fit">Fit Full Width (No Crop)</option>
       <option value="square_center">1:1 Center Square (1080×1080)</option>
     </select>
   </div>
@@ -91,7 +149,7 @@
     <button id="previewBtn">Preview (60 FPS)</button>
     <button id="recordBtn">Record 1080p60 Reels</button>
   </div>
-  <div id="status">Select your 6 gallery photos to begin.</div>
+  <div id="status">Select your 6 gallery photos. Checked slots will auto-remove background.</div>
 </div>
 
 <div class="canvas-wrap">
@@ -105,7 +163,7 @@ const W = 1080;
 const H = 1920;
 const GRID_SIZE = 1080;
 const CELL = 360;
-const GRID_TOP = (H - GRID_SIZE) / 2; // 420px vertical offset for 9:16 Reels safe zone
+const GRID_TOP = (H - GRID_SIZE) / 2;
 
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
@@ -117,11 +175,14 @@ const bgAudio = document.getElementById('bgAudio');
 const audioStatus = document.getElementById('audioStatus');
 const audioState = document.getElementById('audioState');
 const finalModeSelect = document.getElementById('finalMode');
+const bgEngineSelect = document.getElementById('bgEngine');
 const scrubber = document.getElementById('scrubber');
 const timeLabel = document.getElementById('timeLabel');
 
-const rawImages = {};
-const cachedCells = {};
+const originalImages = {};  // Raw uploaded Image objects
+const cutoutCanvases = {};  // Processed transparent cutout canvases
+const activeSources = {};   // Points to either cutoutCanvases[i] or originalImages[i]
+const cachedCells = {};     // 360x360 pre-scaled offscreen buffers for 60 FPS rendering
 
 bgAudio.addEventListener('loadedmetadata', () => {
   audioStatus.classList.remove('error');
@@ -133,7 +194,164 @@ bgAudio.addEventListener('error', () => {
   audioState.textContent = 'Place audio.mp3 in this folder!';
 });
 
-function buildCellCache(lvl, img) {
+// ==========================================
+// AUTO BACKGROUND REMOVAL ENGINE (AI + OFFLINE FALLBACK)
+// ==========================================
+let segmenter = null;
+let segmentQueue = Promise.resolve();
+
+async function getAISegmenter() {
+  if (segmenter) return segmenter;
+  if (typeof SelfieSegmentation === 'undefined') return null;
+  try {
+    const s = new SelfieSegmentation({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+    });
+    s.setOptions({ modelSelection: 1 });
+    await s.initialize();
+    segmenter = s;
+    return segmenter;
+  } catch (err) {
+    console.warn('AI Segmenter unavailable, using offline flood-fill fallback:', err);
+    return null;
+  }
+}
+
+// Automatically trims excess transparent borders so cutouts fill their 360x360 slot nicely
+function autoTrimTransparentCanvas(srcCanvas) {
+  const w = srcCanvas.width;
+  const h = srcCanvas.height;
+  const sctx = srcCanvas.getContext('2d');
+  const data = sctx.getImageData(0, 0, w, h).data;
+
+  let minX = w, minY = h, maxX = 0, maxY = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const alpha = data[(y * w + x) * 4 + 3];
+      if (alpha > 25) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+
+  if (maxX <= minX || maxY <= minY) return srcCanvas;
+
+  const pad = Math.round(Math.max(w, h) * 0.02);
+  const sx = Math.max(0, minX - pad);
+  const sy = Math.max(0, minY - pad);
+  const sw = Math.min(w - sx, (maxX - minX) + pad * 2);
+  const sh = Math.min(h - sy, (maxY - minY) + pad * 2);
+
+  const trimmed = document.createElement('canvas');
+  trimmed.width = sw;
+  trimmed.height = sh;
+  trimmed.getContext('2d').drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+  return trimmed;
+}
+
+// Offline Corner Flood-Fill Background Remover
+function removeBgFloodFill(img) {
+  const w = img.width;
+  const h = img.height;
+  const off = document.createElement('canvas');
+  off.width = w;
+  off.height = h;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0);
+
+  const imgData = octx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  const visited = new Uint8Array(w * h);
+
+  // Sample corners to determine background color
+  const corners = [
+    [0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1],
+    [Math.floor(w / 2), 0]
+  ];
+  const samples = corners.map(([cx, cy]) => {
+    const idx = (cy * w + cx) * 4;
+    return [d[idx], d[idx + 1], d[idx + 2]];
+  });
+
+  const tolerance = 46;
+  const tolSq = tolerance * tolerance * 3;
+
+  function matchesBg(idx) {
+    const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+    for (const [sr, sg, sb] of samples) {
+      const dr = r - sr, dg = g - sg, db = b - sb;
+      if (dr * dr + dg * dg + db * db <= tolSq) return true;
+    }
+    return false;
+  }
+
+  const stack = [];
+  for (let x = 0; x < w; x++) {
+    stack.push(x, (h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y++) {
+    stack.push(y * w, y * w + (w - 1));
+  }
+
+  while (stack.length > 0) {
+    const p = stack.pop();
+    if (visited[p]) continue;
+    visited[p] = 1;
+
+    const idx = p * 4;
+    if (matchesBg(idx)) {
+      d[idx + 3] = 0;
+      const x = p % w;
+      const y = (p - x) / w;
+      if (x > 0 && !visited[p - 1]) stack.push(p - 1);
+      if (x < w - 1 && !visited[p + 1]) stack.push(p + 1);
+      if (y > 0 && !visited[p - w]) stack.push(p - w);
+      if (y < h - 1 && !visited[p + w]) stack.push(p + w);
+    }
+  }
+
+  octx.putImageData(imgData, 0, 0);
+  return autoTrimTransparentCanvas(off);
+}
+
+// AI Portrait Segmentation Background Remover
+async function removeBgAI(img) {
+  const seg = await getAISegmenter();
+  if (!seg) return removeBgFloodFill(img);
+
+  return new Promise((resolve) => {
+    seg.onResults((results) => {
+      const w = img.width;
+      const h = img.height;
+      const off = document.createElement('canvas');
+      off.width = w;
+      off.height = h;
+      const octx = off.getContext('2d');
+
+      // Draw feathered AI person mask
+      octx.save();
+      octx.filter = 'blur(1.5px)';
+      octx.drawImage(results.segmentationMask, 0, 0, w, h);
+      octx.restore();
+
+      // Keep only foreground person pixels
+      octx.globalCompositeOperation = 'source-in';
+      octx.drawImage(img, 0, 0, w, h);
+
+      resolve(autoTrimTransparentCanvas(off));
+    });
+    seg.send({ image: img });
+  });
+}
+
+function buildCellCache(lvl) {
+  const src = activeSources[lvl];
+  if (!src) return;
+
+  const isCutout = document.getElementById('bg' + lvl).checked;
   const off = document.createElement('canvas');
   off.width = CELL;
   off.height = CELL;
@@ -143,21 +361,58 @@ function buildCellCache(lvl, img) {
 
   const pad = 10;
   const box = CELL - pad * 2;
+  const sw = src.width;
+  const sh = src.height;
 
-  if (lvl === 3 || lvl === 5) {
-    const s = Math.max(box / img.width, box / img.height);
-    const sw = box / s;
-    const sh = box / s;
-    const sx = (img.width - sw) / 2;
-    const sy = (img.height - sh) / 2;
-    octx.drawImage(img, sx, sy, sw, sh, pad, pad, box, box);
+  if (!isCutout && (lvl === 3 || lvl === 5)) {
+    // 1:1 square center-crop for non-cutout square stages
+    const s = Math.max(box / sw, box / sh);
+    const cw = box / s;
+    const ch = box / s;
+    const sx = (sw - cw) / 2;
+    const sy = (sh - ch) / 2;
+    octx.drawImage(src, sx, sy, cw, ch, pad, pad, box, box);
   } else {
-    const s = Math.min(box / img.width, box / img.height);
-    const w = img.width * s;
-    const h = img.height * s;
-    octx.drawImage(img, pad + (box - w) / 2, pad + (box - h) / 2, w, h);
+    // Clean aspect-fit inside slot for cutout stages
+    const s = Math.min(box / sw, box / sh);
+    const dw = sw * s;
+    const dh = sh * s;
+    octx.drawImage(src, pad + (box - dw) / 2, pad + (box - dh) / 2, dw, dh);
   }
   cachedCells[lvl] = off;
+}
+
+async function processPhotoSlot(lvl, forceRecompute = false) {
+  const img = originalImages[lvl];
+  if (!img) return;
+
+  const wantRemoveBg = document.getElementById('bg' + lvl).checked;
+  const thumbEl = document.getElementById('t' + lvl);
+
+  if (wantRemoveBg) {
+    if (!cutoutCanvases[lvl] || forceRecompute) {
+      statusEl.textContent = `Removing background for Photo ${lvl}...`;
+      const engine = bgEngineSelect.value;
+      if (engine === 'ai') {
+        segmentQueue = segmentQueue.then(async () => {
+          cutoutCanvases[lvl] = await removeBgAI(img);
+        });
+        await segmentQueue;
+      } else {
+        cutoutCanvases[lvl] = removeBgFloodFill(img);
+      }
+    }
+    activeSources[lvl] = cutoutCanvases[lvl];
+    thumbEl.src = cutoutCanvases[lvl].toDataURL('image/png');
+    statusEl.textContent = `Photo ${lvl} background removed ✓`;
+  } else {
+    activeSources[lvl] = img;
+    thumbEl.src = img.src;
+    statusEl.textContent = `Photo ${lvl} restored to original.`;
+  }
+
+  buildCellCache(lvl);
+  drawFrame(parseFloat(scrubber.value));
 }
 
 for (let i = 1; i <= 6; i++) {
@@ -165,16 +420,27 @@ for (let i = 1; i <= 6; i++) {
     const file = e.target.files[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    document.getElementById('t' + i).src = url;
     const img = new Image();
     img.onload = () => {
-      rawImages[i] = img;
-      buildCellCache(i, img);
-      drawFrame(parseFloat(scrubber.value));
+      originalImages[i] = img;
+      delete cutoutCanvases[i];
+      processPhotoSlot(i, true);
     };
     img.src = url;
   });
+
+  document.getElementById('bg' + i).addEventListener('change', () => {
+    processPhotoSlot(i, false);
+  });
 }
+
+bgEngineSelect.addEventListener('change', () => {
+  for (let i = 1; i <= 6; i++) {
+    if (originalImages[i] && document.getElementById('bg' + i).checked) {
+      processPhotoSlot(i, true);
+    }
+  }
+});
 
 scrubber.addEventListener('input', () => {
   const t = parseFloat(scrubber.value);
@@ -184,13 +450,15 @@ scrubber.addEventListener('input', () => {
 
 finalModeSelect.addEventListener('change', () => drawFrame(parseFloat(scrubber.value)));
 
+// ==========================================
+// 32-MERGE AUDIO-LOCKED TIMELINE & 60FPS RENDERER
+// ==========================================
 const SLOTS = {
   TL: [0, 0], TC: [1, 0], TR: [2, 0],
   ML: [0, 1], MC: [1, 1], MR: [2, 1],
   BL: [0, 2], BC: [1, 2], BR: [2, 2]
 };
 
-// Re-verified 32-merge choreography matched at 0.5s intervals against the reference video & audio.mp3
 const TIMELINE = [
   // ROUND 1: Starts with all 9 slots = Photo 1 (7 merges -> MC=4, BR=1)
   { type: 'board', t: 0.00, state: { TL:1, TC:1, TR:1, ML:1, MC:1, MR:1, BL:1, BC:1, BR:1 } },
@@ -202,7 +470,7 @@ const TIMELINE = [
   { type: 'move',  t: 4.18, dur: 0.68, from: 'BC', to: 'MR', lvl: 2, next: 3 },
   { type: 'move',  t: 5.15, dur: 0.68, from: 'MR', to: 'MC', lvl: 3, next: 4 },
 
-  // ROUND 2: "Woo hoo hoo!" top-to-bottom wave spawn (0:06.30) + 8 merges -> MC=5
+  // ROUND 2: "Woo hoo hoo!" wave spawn (0:06.30) + 8 merges -> MC=5
   { type: 'spawn', t: 6.30, dur: 0.48, cells: ['TL','TC','TR','ML','MR','BL','BC'], lvl: 1 },
   { type: 'move',  t: 6.85, dur: 0.60, from: 'TC', to: 'TR', lvl: 1, next: 2 },
   { type: 'move',  t: 7.72, dur: 0.65, from: 'MR', to: 'BR', lvl: 1, next: 2 },
@@ -223,14 +491,13 @@ const TIMELINE = [
   { type: 'move',  t: 20.18, dur: 0.68, from: 'MR', to: 'TC', lvl: 2, next: 3 },
   { type: 'move',  t: 21.15, dur: 0.68, from: 'BC', to: 'TC', lvl: 3, next: 4 },
 
-  // ROUND 4: "Woo hoo hoo!" 7-slot spawn (0:22.15), 4 merges, "Xiannu xiafan" fade-in (0:26.75), 5 final merges -> Photo 6
+  // ROUND 4: "Woo hoo hoo!" spawn (0:22.15), 4 merges, "Xiannu xiafan" fade-in (0:26.75), 5 final merges -> Photo 6
   { type: 'spawn', t: 22.15, dur: 0.45, cells: ['TL','TR','ML','MR','BL','BC','BR'], lvl: 1 },
   { type: 'move',  t: 22.68, dur: 0.68, from: 'BR', to: 'TL', lvl: 1, next: 2 },
   { type: 'move',  t: 23.68, dur: 0.68, from: 'TR', to: 'MR', lvl: 1, next: 2 },
   { type: 'move',  t: 24.52, dur: 0.58, from: 'BC', to: 'ML', lvl: 1, next: 2 },
   { type: 'move',  t: 25.32, dur: 0.65, from: 'MR', to: 'TL', lvl: 2, next: 3 },
 
-  // "Xiannu xiafan" (仙女下凡) voice cue: bonus Photo 1 fades in smoothly at BC
   { type: 'fadein', t: 26.75, dur: 1.35, cell: 'BC', lvl: 1 },
 
   { type: 'move',  t: 28.22, dur: 0.68, from: 'BC', to: 'BL', lvl: 1, next: 2 },
@@ -240,13 +507,11 @@ const TIMELINE = [
   { type: 'move',  t: 32.58, dur: 0.68, from: 'TC', to: 'MC', lvl: 5, next: 6 }
 ];
 
-// Silky quintic-style smoothstep for natural acceleration and cushioned landing
 function smoothGlide(p) {
   p = Math.max(0, Math.min(1, p));
   return p * p * p * (p * (p * 6 - 15) + 10);
 }
 
-// Damped spring pop when two photos merge into the upgraded stage
 function springPop(dt) {
   if (dt < 0 || dt > 0.26) return 1;
   const u = dt / 0.26;
@@ -291,7 +556,6 @@ function getSceneAtTime(sec) {
         const rawP = (sec - ev.t) / ev.dur;
         const p = smoothGlide(rawP);
 
-        // Softly compress the target slot just before impact (rawP > 0.80)
         if (rawP > 0.80) {
           const impactP = (rawP - 0.80) / 0.20;
           cellScale[ev.to] = 1 - 0.06 * Math.sin(impactP * Math.PI);
@@ -348,13 +612,13 @@ function drawSlotPhoto(lvl, x, y, alpha = 1, scaleX = 1, scaleY = 1) {
 
 function drawFinalReveal(sec) {
   const expandP = smoothGlide((sec - 33.26) / 0.44);
-  const img = rawImages[6];
+  const src = activeSources[6];
   const mode = finalModeSelect.value;
 
   let targetW = W;
   let targetH = (mode === 'square_center') ? W : H;
-  if (mode === 'reels_fit' && img) {
-    const ratio = img.height / img.width;
+  if (mode === 'reels_fit' && src) {
+    const ratio = src.height / src.width;
     targetH = Math.min(H, W * ratio);
   }
 
@@ -363,7 +627,7 @@ function drawFinalReveal(sec) {
   const curX = (W - curW) / 2;
   const curY = (H - curH) / 2;
 
-  if (!img) {
+  if (!src) {
     ctx.fillStyle = '#f3f4f6';
     ctx.fillRect(curX, curY, curW, curH);
     ctx.fillStyle = '#111827';
@@ -373,18 +637,19 @@ function drawFinalReveal(sec) {
     return;
   }
 
-  if (mode === 'reels_fit') {
-    const s = Math.min(curW / img.width, curH / img.height);
-    const dw = img.width * s;
-    const dh = img.height * s;
-    ctx.drawImage(img, curX + (curW - dw) / 2, curY + (curH - dh) / 2, dw, dh);
+  const isCutout = document.getElementById('bg6').checked;
+  if (mode === 'reels_fit' || isCutout) {
+    const s = Math.min(curW / src.width, curH / src.height);
+    const dw = src.width * s;
+    const dh = src.height * s;
+    ctx.drawImage(src, curX + (curW - dw) / 2, curY + (curH - dh) / 2, dw, dh);
   } else {
-    const s = Math.max(curW / img.width, curH / img.height);
+    const s = Math.max(curW / src.width, curH / src.height);
     const sw = curW / s;
     const sh = curH / s;
-    const sx = (img.width - sw) / 2;
-    const sy = (img.height - sh) / 2;
-    ctx.drawImage(img, sx, sy, sw, sh, curX, curY, curW, curH);
+    const sx = (src.width - sw) / 2;
+    const sy = (src.height - sh) / 2;
+    ctx.drawImage(src, sx, sy, sw, sh, curX, curY, curW, curH);
   }
 }
 
@@ -412,13 +677,11 @@ function drawFrame(sec) {
     const cx = (fx + (tx - fx) * activeMove.p) * CELL;
     const cy = GRID_TOP + (fy + (ty - fy) * activeMove.p) * CELL;
 
-    // Velocity-based subtle squash & stretch along movement direction
     const vel = Math.sin(activeMove.rawP * Math.PI);
     const isHoriz = Math.abs(tx - fx) >= Math.abs(ty - fy);
     const sx = 1.02 + (isHoriz ? 0.025 * vel : -0.015 * vel);
     const sy = 1.02 + (isHoriz ? -0.015 * vel : 0.025 * vel);
 
-    // Smooth cross-dissolve during final 15% of merge overlap
     const moveAlpha = activeMove.rawP > 0.85 ? (1 - (activeMove.rawP - 0.85) / 0.15 * 0.35) : 1;
     drawSlotPhoto(activeMove.lvl, cx, cy, moveAlpha, sx, sy);
   }
@@ -445,7 +708,6 @@ function startPlayback(onComplete) {
     lastPerf = now;
     smoothTime += dt;
 
-    // Phase-Locked Loop (PLL) smoothly steers frame time to match bgAudio.currentTime without micro-stutter
     if (audioPlaying && !bgAudio.paused) {
       const audioT = bgAudio.currentTime;
       const err = audioT - smoothTime;
