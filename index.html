@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3x3 Photo Merge Video Generator</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #121212; color: #f5f5f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+  .panel { background: #1e1e1e; padding: 18px; border-radius: 12px; max-width: 540px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #333; }
+  h2 { margin-top: 0; font-size: 1.2rem; }
+  .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  label { font-size: 0.82rem; color: #ccc; display: block; margin-bottom: 4px; }
+  input[type="file"] { width: 100%; font-size: 0.78rem; color: #aaa; }
+  .btn-row { display: flex; gap: 10px; margin-top: 12px; }
+  button { flex: 1; padding: 10px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  #previewBtn { background: #3b82f6; color: #fff; }
+  #recordBtn { background: #10b981; color: #fff; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  canvas { background: #ffffff; border-radius: 8px; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+  #status { font-size: 0.85rem; color: #fbbf24; margin-top: 8px; min-height: 1.2em; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h2>3×3 Photo Merge Video Generator</h2>
+  <div class="grid-inputs">
+    <div><label>Photo 1 (Baby PNG/Photo)</label><input type="file" id="p1" accept="image/*"></div>
+    <div><label>Photo 2 (Kid PNG/Photo)</label><input type="file" id="p2" accept="image/*"></div>
+    <div><label>Photo 3 (Pre-teen Square)</label><input type="file" id="p3" accept="image/*"></div>
+    <div><label>Photo 4 (Teen PNG/Photo)</label><input type="file" id="p4" accept="image/*"></div>
+    <div><label>Photo 5 (Close-up Square)</label><input type="file" id="p5" accept="image/*"></div>
+    <div><label>Photo 6 (Final Full Photo)</label><input type="file" id="p6" accept="image/*"></div>
+  </div>
+  <div>
+    <label>Reference Video / Audio (Upload the original MP4 for sound sync)</label>
+    <input type="file" id="audioSource" accept="video/*,audio/*">
+  </div>
+  <div class="btn-row">
+    <button id="previewBtn">Preview Animation</button>
+    <button id="recordBtn">Record & Download Video</button>
+  </div>
+  <div id="status">Upload your 6 photos to begin.</div>
+</div>
+
+<canvas id="stage" width="720" height="720"></canvas>
+<video id="refMedia" style="display:none" crossorigin="anonymous"></video>
+
+<script>
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const refMedia = document.getElementById('refMedia');
+const images = {};
+
+for (let i = 1; i <= 6; i++) {
+  document.getElementById('p' + i).addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => { images[i] = img; drawFrame(0); };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+document.getElementById('audioSource').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) refMedia.src = URL.createObjectURL(file);
+});
+
+const SLOT_COORDS = {
+  TL: [0, 0], TC: [1, 0], TR: [2, 0],
+  ML: [0, 1], MC: [1, 1], MR: [2, 1],
+  BL: [0, 2], BC: [1, 2], BR: [2, 2]
+};
+
+// Exact 34.7s choreography matching the reference video
+const EVENTS = [
+  { t: 0.0, board: { TC:2, TR:1, ML:1, MC:1, MR:1, BL:1, BC:1, BR:1 } },
+  { t: 0.1, move: ['ML', 'MC', 1, 2, 0.85] },
+  { t: 1.1, move: ['BL', 'BC', 1, 2, 0.85] },
+  { t: 2.1, move: ['TC', 'MC', 2, 3, 0.85] },
+  { t: 3.1, move: ['TR', 'MR', 1, 2, 0.85] },
+  { t: 4.1, move: ['BC', 'MR', 2, 3, 0.85] },
+  { t: 5.1, move: ['MR', 'MC', 3, 4, 0.85] },
+
+  { t: 6.8, board: { TL:1, TC:1, TR:1, ML:1, MC:4, MR:1, BL:1, BC:1, BR:1 } },
+  { t: 7.0, move: ['TC', 'TR', 1, 2, 0.85] },
+  { t: 8.0, move: ['MR', 'BR', 1, 2, 0.45] },
+  { t: 8.5, move: ['TR', 'BR', 2, 3, 0.45] },
+  { t: 9.1, move: ['BC', 'BL', 1, 2, 0.85] },
+  { t: 10.1, move: ['ML', 'TL', 1, 2, 0.85] },
+  { t: 11.1, move: ['BL', 'TL', 2, 3, 0.85] },
+  { t: 12.1, move: ['BR', 'TL', 3, 4, 0.85] },
+  { t: 13.1, move: ['TL', 'MC', 4, 5, 0.85] },
+
+  { t: 14.8, board: { TL:1, TC:1, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1, BR:1 } },
+  { t: 15.1, move: ['TL', 'ML', 1, 2, 0.85] },
+  { t: 16.1, move: ['BL', 'BC', 1, 2, 0.85] },
+  { t: 17.1, move: ['BR', 'MR', 1, 2, 0.85] },
+  { t: 18.1, move: ['TR', 'TC', 1, 2, 0.85] },
+  { t: 19.1, move: ['ML', 'BC', 2, 3, 0.85] },
+  { t: 20.1, move: ['MR', 'TC', 2, 3, 0.85] },
+  { t: 21.1, move: ['BC', 'TC', 3, 4, 0.85] },
+
+  { t: 22.2, board: { TL:1, TC:4, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1 } },
+  { t: 23.0, board: { TL:2, TC:4, TR:1, ML:1, MC:5, MR:1, BL:1, BC:1 } },
+  { t: 23.1, move: ['TR', 'MR', 1, 2, 0.85] },
+  { t: 24.1, move: ['BC', 'ML', 1, 2, 0.85] },
+  { t: 25.1, move: ['MR', 'TL', 2, 3, 0.85] },
+  { t: 27.2, board: { TL:3, TC:4, ML:2, MC:5, BL:1, BC:1 } },
+  { t: 28.1, move: ['BC', 'BL', 1, 2, 0.85] },
+  { t: 29.1, move: ['BL', 'ML', 2, 3, 0.85] },
+  { t: 30.1, move: ['ML', 'TL', 3, 4, 0.85] },
+  { t: 31.1, move: ['TL', 'TC', 4, 5, 0.85] },
+  { t: 32.1, move: ['TC', 'MC', 5, 6, 0.85] }
+];
+
+function getStateAtTime(sec) {
+  let board = {};
+  let activeMove = null;
+  for (const ev of EVENTS) {
+    if (sec >= ev.t) {
+      if (ev.board) board = { ...ev.board };
+      if (ev.move) {
+        const [from, to, lvl, nextLvl, dur] = ev.move;
+        if (sec < ev.t + dur) {
+          delete board[from];
+          activeMove = { from, to, lvl, p: (sec - ev.t) / dur };
+        } else {
+          delete board[from];
+          board[to] = nextLvl;
+        }
+      }
+    }
+  }
+  return { board, activeMove };
+}
+
+function drawPhoto(lvl, x, y, size) {
+  const img = images[lvl];
+  if (!img) {
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fillRect(x + 12, y + 12, size - 24, size - 24);
+    ctx.fillStyle = '#374151';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('P' + lvl, x + size / 2, y + size / 2 + 10);
+    return;
+  }
+  const scale = Math.min(size / img.width, size / img.height);
+  const w = img.width * scale;
+  const h = img.height * scale;
+  ctx.drawImage(img, x + (size - w) / 2, y + (size - h) / 2, w, h);
+}
+
+function drawFrame(sec) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const cell = canvas.width / 3;
+
+  if (sec >= 32.95) {
+    const expandP = Math.min(1, (sec - 32.95) / 0.35);
+    const size = cell + (canvas.width - cell) * expandP;
+    const pos = (canvas.width - size) / 2;
+    drawPhoto(6, pos, pos, size);
+    return;
+  }
+
+  const { board, activeMove } = getStateAtTime(sec);
+  for (const [slot, lvl] of Object.entries(board)) {
+    const [gx, gy] = SLOT_COORDS[slot];
+    drawPhoto(lvl, gx * cell, gy * cell, cell);
+  }
+  if (activeMove) {
+    const [fx, fy] = SLOT_COORDS[activeMove.from];
+    const [tx, ty] = SLOT_COORDS[activeMove.to];
+    const cx = (fx + (tx - fx) * activeMove.p) * cell;
+    const cy = (fy + (ty - fy) * activeMove.p) * cell;
+    drawPhoto(activeMove.lvl, cx, cy, cell);
+  }
+}
+
+let animId = null;
+function runTimeline(onComplete) {
+  cancelAnimationFrame(animId);
+  const duration = 34.7;
+  const start = performance.now();
+  if (refMedia.src) {
+    refMedia.currentTime = 0;
+    refMedia.play().catch(() => {});
+  }
+  function tick(now) {
+    const elapsed = (now - start) / 1000;
+    drawFrame(elapsed);
+    statusEl.textContent = `Playing: ${elapsed.toFixed(1)}s / ${duration}s`;
+    if (elapsed < duration) {
+      animId = requestAnimationFrame(tick);
+    } else {
+      if (refMedia.src) refMedia.pause();
+      statusEl.textContent = 'Completed (34.7s).';
+      if (onComplete) onComplete();
+    }
+  }
+  animId = requestAnimationFrame(tick);
+}
+
+document.getElementById('previewBtn').addEventListener('click', () => runTimeline());
+
+document.getElementById('recordBtn').addEventListener('click', async () => {
+  const stream = canvas.captureStream(30);
+  if (refMedia.src && refMedia.captureStream) {
+    const mediaStream = refMedia.captureStream();
+    mediaStream.getAudioTracks().forEach(t => stream.addTrack(t));
+  }
+  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'photo_merge_evolution.webm';
+    a.click();
+    document.getElementById('recordBtn').disabled = false;
+  };
+  document.getElementById('recordBtn').disabled = true;
+  recorder.start();
+  runTimeline(() => recorder.stop());
+});
+
+drawFrame(0);
+</script>
+</body>
+</html>
