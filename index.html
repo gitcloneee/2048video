@@ -3,32 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3x3 Photo Merge Video Maker</title>
+<title>Instagram Reels 60FPS Photo Merge Maker</title>
 <style>
-  body { font-family: system-ui, -apple-system, sans-serif; background: #121212; color: #f5f5f5; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
-  .panel { background: #1e1e1e; padding: 16px; border-radius: 12px; max-width: 540px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #333; }
-  h2 { margin: 0 0 12px 0; font-size: 1.15rem; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0f0f11; color: #f5f5f5; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+  .panel { background: #1a1a1e; padding: 16px; border-radius: 14px; max-width: 560px; width: 100%; box-sizing: border-box; margin-bottom: 16px; border: 1px solid #2e2e34; }
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  h2 { margin: 0; font-size: 1.1rem; }
+  .pill { background: #2563eb; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
   .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .slot-card { background: #262626; padding: 8px 10px; border-radius: 8px; border: 1px solid #3a3a3a; display: flex; align-items: center; gap: 8px; }
+  .slot-card { background: #242429; padding: 8px 10px; border-radius: 8px; border: 1px solid #36363e; display: flex; align-items: center; gap: 8px; }
   .thumb { width: 38px; height: 38px; border-radius: 6px; background: #fff; object-fit: contain; flex-shrink: 0; border: 1px solid #444; }
   .slot-info { flex: 1; overflow: hidden; }
-  label { font-size: 0.78rem; font-weight: 600; color: #ddd; display: block; margin-bottom: 3px; }
-  input[type="file"] { width: 100%; font-size: 0.72rem; color: #aaa; }
-  .audio-bar { background: #262626; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; color: #34d399; border: 1px solid #065f46; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-  .audio-bar.error { color: #f87171; border-color: #7f1d1d; }
+  label { font-size: 0.76rem; font-weight: 600; color: #e4e4e7; display: block; margin-bottom: 3px; }
+  input[type="file"] { width: 100%; font-size: 0.7rem; color: #a1a1aa; }
+  .options-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; background: #242429; padding: 8px 12px; border-radius: 8px; border: 1px solid #36363e; font-size: 0.8rem; }
+  .options-row select { background: #18181b; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 5px 8px; font-size: 0.78rem; flex: 1; }
+  .audio-bar { background: #1e2923; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; color: #34d399; border: 1px solid #065f46; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .audio-bar.error { background: #2d1a1a; color: #f87171; border-color: #7f1d1d; }
   .btn-row { display: flex; gap: 10px; }
-  button { flex: 1; padding: 11px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  button { flex: 1; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: opacity 0.15s; }
   #previewBtn { background: #3b82f6; color: #fff; }
   #recordBtn { background: #10b981; color: #fff; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  canvas { background: #ffffff; border-radius: 8px; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
-  #status { font-size: 0.84rem; color: #fbbf24; margin-top: 10px; min-height: 1.2em; text-align: center; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .canvas-wrap { width: 100%; max-width: 340px; aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.65); border: 2px solid #2e2e34; background: #ffffff; }
+  canvas { width: 100%; height: 100%; display: block; }
+  #status { font-size: 0.82rem; color: #fbbf24; margin-top: 10px; min-height: 1.2em; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="panel">
-  <h2>3×3 Photo Merge Video Generator</h2>
+  <div class="header-row">
+    <h2>Reels 3×3 Photo Merge Generator</h2>
+    <span class="pill">1080×1920 • 60 FPS</span>
+  </div>
 
   <div class="grid-inputs">
     <div class="slot-card">
@@ -53,34 +61,59 @@
     </div>
     <div class="slot-card">
       <img id="t6" class="thumb" alt="P6">
-      <div class="slot-info"><label>Photo 6 (Final Full 1:1)</label><input type="file" id="p6" accept="image/*"></div>
+      <div class="slot-info"><label>Photo 6 (Final Reveal)</label><input type="file" id="p6" accept="image/*"></div>
     </div>
   </div>
 
+  <div class="options-row">
+    <span>Final Photo 6 Reveal Mode:</span>
+    <select id="finalMode">
+      <option value="reels_full">Full 9:16 Reels Screen (1080×1920)</option>
+      <option value="reels_fit">Fit Full Width Inside Reels (No Crop)</option>
+      <option value="square_center">1:1 Center Square (1080×1080)</option>
+    </select>
+  </div>
+
   <div id="audioStatus" class="audio-bar">
-    <span>Audio Source: <b>audio.mp3</b> (Local Folder)</span>
+    <span>Audio: <b>audio.mp3</b> (Local Storage)</span>
     <span id="audioState">Checking...</span>
   </div>
 
   <div class="btn-row">
-    <button id="previewBtn">Preview with Audio</button>
-    <button id="recordBtn">Record & Export Video</button>
+    <button id="previewBtn">Preview (60 FPS)</button>
+    <button id="recordBtn">Record 1080p60 Reels</button>
   </div>
-  <div id="status">Pick your 6 photos from the gallery to start.</div>
+  <div id="status">Select your 6 gallery photos to begin.</div>
 </div>
 
-<canvas id="stage" width="720" height="720"></canvas>
-<!-- Automatically loads audio.mp3 from the same folder -->
+<!-- Instagram Reels Full HD 9:16 Canvas (1080 x 1920) -->
+<div class="canvas-wrap">
+  <canvas id="stage" width="1080" height="1920"></canvas>
+</div>
+
+<!-- Automatically loads audio.mp3 from local folder -->
 <audio id="bgAudio" src="audio.mp3" preload="auto"></audio>
 
 <script>
+const W = 1080;
+const H = 1920;
+const GRID_SIZE = 1080;
+const CELL = 360; // 1080 / 3
+const GRID_TOP = (H - GRID_SIZE) / 2; // 420px vertical offset for 9:16 Reels centering
+
 const canvas = document.getElementById('stage');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
+
 const statusEl = document.getElementById('status');
 const bgAudio = document.getElementById('bgAudio');
 const audioStatus = document.getElementById('audioStatus');
 const audioState = document.getElementById('audioState');
-const images = {};
+const finalModeSelect = document.getElementById('finalMode');
+
+const rawImages = {};
+const cachedCells = {}; // Pre-scaled 360x360 offscreen textures for zero-lag 60fps
 
 bgAudio.addEventListener('loadedmetadata', () => {
   audioStatus.classList.remove('error');
@@ -89,8 +122,38 @@ bgAudio.addEventListener('loadedmetadata', () => {
 
 bgAudio.addEventListener('error', () => {
   audioStatus.classList.add('error');
-  audioState.textContent = 'audio.mp3 not found in folder!';
+  audioState.textContent = 'Place audio.mp3 in this folder!';
 });
+
+// Pre-render uploaded gallery images onto hardware-accelerated offscreen canvases
+function buildCellCache(lvl, img) {
+  const off = document.createElement('canvas');
+  off.width = CELL;
+  off.height = CELL;
+  const octx = off.getContext('2d');
+  octx.imageSmoothingEnabled = true;
+  octx.imageSmoothingQuality = 'high';
+
+  const pad = 10;
+  const box = CELL - pad * 2;
+
+  if (lvl === 3 || lvl === 5) {
+    // 1:1 center-crop for square stages
+    const s = Math.max(box / img.width, box / img.height);
+    const sw = box / s;
+    const sh = box / s;
+    const sx = (img.width - sw) / 2;
+    const sy = (img.height - sh) / 2;
+    octx.drawImage(img, sx, sy, sw, sh, pad, pad, box, box);
+  } else {
+    // Clean aspect-fit for cutout stages (1, 2, 4)
+    const s = Math.min(box / img.width, box / img.height);
+    const w = img.width * s;
+    const h = img.height * s;
+    octx.drawImage(img, pad + (box - w) / 2, pad + (box - h) / 2, w, h);
+  }
+  cachedCells[lvl] = off;
+}
 
 for (let i = 1; i <= 6; i++) {
   document.getElementById('p' + i).addEventListener('change', (e) => {
@@ -100,12 +163,15 @@ for (let i = 1; i <= 6; i++) {
     document.getElementById('t' + i).src = url;
     const img = new Image();
     img.onload = () => {
-      images[i] = img;
+      rawImages[i] = img;
+      buildCellCache(i, img);
       drawFrame(0);
     };
     img.src = url;
   });
 }
+
+finalModeSelect.addEventListener('change', () => drawFrame(33.5));
 
 const SLOTS = {
   TL: [0, 0], TC: [1, 0], TR: [2, 0],
@@ -152,7 +218,7 @@ const TIMELINE = [
   { type: 'move',  t: 24.25, dur: 0.80, from: 'BC', to: 'ML', lvl: 1, next: 2 },
   { type: 'move',  t: 25.10, dur: 0.85, from: 'MR', to: 'TL', lvl: 2, next: 3 },
 
-  // "Xiannu xiafan" voice line: bonus Photo 1 fades in at BC
+  // "Xiannu xiafan" voice cue: bonus Photo 1 fades in smoothly at BC
   { type: 'fadein', t: 26.80, dur: 1.50, cell: 'BC', lvl: 1 },
 
   { type: 'move',  t: 28.45, dur: 0.85, from: 'BC', to: 'BL', lvl: 1, next: 2 },
@@ -162,8 +228,16 @@ const TIMELINE = [
   { type: 'move',  t: 32.20, dur: 0.80, from: 'TC', to: 'MC', lvl: 5, next: 6 }
 ];
 
-function easeInOut(p) {
-  return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+// Ultra-smooth cubic ease-in-out
+function easeInOutCubic(p) {
+  return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+}
+
+// Subtle pop animation when two photos merge into the upgraded photo
+function mergePopScale(timeSinceMerge) {
+  if (timeSinceMerge < 0 || timeSinceMerge > 0.18) return 1;
+  const p = timeSinceMerge / 0.18;
+  return 1 + 0.08 * Math.sin(p * Math.PI);
 }
 
 function getSceneAtTime(sec) {
@@ -179,12 +253,13 @@ function getSceneAtTime(sec) {
       board = { ...ev.state };
     } else if (ev.type === 'spawn') {
       ev.cells.forEach((c, idx) => {
-        const delay = (idx / ev.cells.length) * (ev.dur * 0.6);
+        const delay = (idx / ev.cells.length) * (ev.dur * 0.55);
         const localT = sec - (ev.t + delay);
         if (localT >= 0) {
           board[c] = ev.lvl;
-          if (localT < 0.25) {
-            cellScale[c] = 0.3 + 0.7 * (localT / 0.25);
+          if (localT < 0.22) {
+            const sp = localT / 0.22;
+            cellScale[c] = 0.25 + 0.75 * easeInOutCubic(sp);
           }
         }
       });
@@ -200,77 +275,98 @@ function getSceneAtTime(sec) {
           from: ev.from,
           to: ev.to,
           lvl: ev.lvl,
-          p: easeInOut((sec - ev.t) / ev.dur)
+          p: easeInOutCubic((sec - ev.t) / ev.dur)
         };
       } else {
         delete board[ev.from];
         board[ev.to] = ev.next;
+        const pop = mergePopScale(sec - (ev.t + ev.dur));
+        if (pop !== 1) cellScale[ev.to] = pop;
       }
     }
   }
   return { board, activeMove, cellAlpha, cellScale };
 }
 
-function drawPhoto(lvl, x, y, size, alpha = 1, scaleFactor = 1) {
+function drawSlotPhoto(lvl, x, y, alpha = 1, scaleFactor = 1) {
   ctx.save();
-  ctx.globalAlpha = alpha;
+  if (alpha !== 1) ctx.globalAlpha = alpha;
 
   if (scaleFactor !== 1) {
-    const cx = x + size / 2;
-    const cy = y + size / 2;
+    const cx = x + CELL / 2;
+    const cy = y + CELL / 2;
     ctx.translate(cx, cy);
     ctx.scale(scaleFactor, scaleFactor);
     ctx.translate(-cx, -cy);
   }
 
-  const img = images[lvl];
+  const cached = cachedCells[lvl];
+  if (cached) {
+    ctx.drawImage(cached, x, y);
+  } else {
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(x + 14, y + 14, CELL - 28, CELL - 28);
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 14, y + 14, CELL - 28, CELL - 28);
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 34px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Photo ' + lvl, x + CELL / 2, y + CELL / 2 + 12);
+  }
+  ctx.restore();
+}
+
+function drawFinalReveal(sec) {
+  const expandP = Math.min(1, easeInOutCubic((sec - 33.0) / 0.42));
+  const img = rawImages[6];
+  const mode = finalModeSelect.value;
+
+  // Target rectangle based on selected Reels mode
+  let targetW = W;
+  let targetH = (mode === 'square_center') ? W : H;
+  if (mode === 'reels_fit' && img) {
+    const ratio = img.height / img.width;
+    targetH = Math.min(H, W * ratio);
+  }
+
+  const curW = CELL + (targetW - CELL) * expandP;
+  const curH = CELL + (targetH - CELL) * expandP;
+  const curX = (W - curW) / 2;
+  const curY = (H - curH) / 2;
+
   if (!img) {
     ctx.fillStyle = '#f3f4f6';
-    ctx.fillRect(x + 10, y + 10, size - 20, size - 20);
-    ctx.strokeStyle = '#d1d5db';
-    ctx.strokeRect(x + 10, y + 10, size - 20, size - 20);
+    ctx.fillRect(curX, curY, curW, curH);
     ctx.fillStyle = '#111827';
-    ctx.font = 'bold 24px sans-serif';
+    ctx.font = 'bold 52px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Photo ' + lvl, x + size / 2, y + size / 2 + 8);
-    ctx.restore();
+    ctx.fillText('Photo 6 (Final Reveal)', W / 2, H / 2);
     return;
   }
 
-  // Photos 3, 5, 6 are square crops; Photos 1, 2, 4 fit cleanly inside the slot
-  const pad = (lvl === 6) ? 0 : 8;
-  const box = size - pad * 2;
-  const bx = x + pad;
-  const by = y + pad;
-
-  if (lvl === 3 || lvl === 5 || lvl === 6) {
-    const s = Math.max(box / img.width, box / img.height);
-    const sw = box / s;
-    const sh = box / s;
+  if (mode === 'reels_fit') {
+    const s = Math.min(curW / img.width, curH / img.height);
+    const dw = img.width * s;
+    const dh = img.height * s;
+    ctx.drawImage(img, curX + (curW - dw) / 2, curY + (curH - dh) / 2, dw, dh);
+  } else {
+    // Cover mode for Full 9:16 Reels or 1:1 Square
+    const s = Math.max(curW / img.width, curH / img.height);
+    const sw = curW / s;
+    const sh = curH / s;
     const sx = (img.width - sw) / 2;
     const sy = (img.height - sh) / 2;
-    ctx.drawImage(img, sx, sy, sw, sh, bx, by, box, box);
-  } else {
-    const s = Math.min(box / img.width, box / img.height);
-    const w = img.width * s;
-    const h = img.height * s;
-    ctx.drawImage(img, bx + (box - w) / 2, by + (box - h) / 2, w, h);
+    ctx.drawImage(img, sx, sy, sw, sh, curX, curY, curW, curH);
   }
-
-  ctx.restore();
 }
 
 function drawFrame(sec) {
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const cell = canvas.width / 3;
+  ctx.fillRect(0, 0, W, H);
 
-  // Final Photo 6 full-screen expansion (0:33.0 -> 0:34.7)
   if (sec >= 33.0) {
-    const expandP = Math.min(1, easeInOut((sec - 33.0) / 0.35));
-    const size = cell + (canvas.width - cell) * expandP;
-    const pos = (canvas.width - size) / 2;
-    drawPhoto(6, pos, pos, size);
+    drawFinalReveal(sec);
     return;
   }
 
@@ -280,15 +376,15 @@ function drawFrame(sec) {
     const [gx, gy] = SLOTS[slot];
     const alpha = cellAlpha[slot] !== undefined ? cellAlpha[slot] : 1;
     const sc = cellScale[slot] !== undefined ? cellScale[slot] : 1;
-    drawPhoto(lvl, gx * cell, gy * cell, cell, alpha, sc);
+    drawSlotPhoto(lvl, gx * CELL, GRID_TOP + gy * CELL, alpha, sc);
   }
 
   if (activeMove) {
     const [fx, fy] = SLOTS[activeMove.from];
     const [tx, ty] = SLOTS[activeMove.to];
-    const cx = (fx + (tx - fx) * activeMove.p) * cell;
-    const cy = (fy + (ty - fy) * activeMove.p) * cell;
-    drawPhoto(activeMove.lvl, cx, cy, cell);
+    const cx = (fx + (tx - fx) * activeMove.p) * CELL;
+    const cy = GRID_TOP + (fy + (ty - fy) * activeMove.p) * CELL;
+    drawSlotPhoto(activeMove.lvl, cx, cy, 1, 1.03);
   }
 }
 
@@ -296,30 +392,37 @@ let animId = null;
 function startPlayback(onComplete) {
   cancelAnimationFrame(animId);
   const totalDuration = 34.7;
-  const startWall = performance.now();
-  let usingAudioClock = false;
+  let startWall = performance.now();
+  let audioSynced = false;
 
   bgAudio.currentTime = 0;
   bgAudio.play().then(() => {
-    usingAudioClock = true;
+    audioSynced = true;
+    startWall = performance.now() - bgAudio.currentTime * 1000;
   }).catch(() => {
-    usingAudioClock = false;
+    audioSynced = false;
   });
 
   function loop(now) {
-    const elapsed = (usingAudioClock && !bgAudio.paused)
-      ? bgAudio.currentTime
-      : (now - startWall) / 1000;
+    // High-precision 60/120Hz clock softly locked to audio to prevent frame jitter
+    let elapsed = (now - startWall) / 1000;
+    if (audioSynced && !bgAudio.paused) {
+      const drift = bgAudio.currentTime - elapsed;
+      if (Math.abs(drift) > 0.04) {
+        startWall = now - bgAudio.currentTime * 1000;
+        elapsed = bgAudio.currentTime;
+      }
+    }
 
     drawFrame(elapsed);
-    statusEl.textContent = `Playing: ${elapsed.toFixed(1)}s / ${totalDuration}s`;
+    statusEl.textContent = `Rendering 60 FPS: ${elapsed.toFixed(1)}s / ${totalDuration}s`;
 
-    if (elapsed < totalDuration && (!usingAudioClock || !bgAudio.ended)) {
+    if (elapsed < totalDuration && (!audioSynced || !bgAudio.ended)) {
       animId = requestAnimationFrame(loop);
     } else {
       bgAudio.pause();
       drawFrame(totalDuration);
-      statusEl.textContent = 'Finished (34.7s)!';
+      statusEl.textContent = 'Completed (1080×1920 @ 60 FPS)!';
       if (onComplete) onComplete();
     }
   }
@@ -329,26 +432,40 @@ function startPlayback(onComplete) {
 document.getElementById('previewBtn').addEventListener('click', () => startPlayback());
 
 document.getElementById('recordBtn').addEventListener('click', () => {
-  const stream = canvas.captureStream(30);
+  // Capture at maximum 60 FPS
+  const stream = canvas.captureStream(60);
+
   try {
     const audioStream = bgAudio.captureStream ? bgAudio.captureStream() : (bgAudio.mozCaptureStream ? bgAudio.mozCaptureStream() : null);
     if (audioStream) {
       audioStream.getAudioTracks().forEach(track => stream.addTrack(track));
     }
   } catch (e) {
-    console.warn('Audio stream capture requires opening via local server if restricted by browser:', e);
+    console.warn('Audio stream capture note:', e);
   }
 
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-  const recorder = new MediaRecorder(stream, { mimeType });
-  const chunks = [];
+  // Prefer native MP4 (H.264) for direct Instagram Reels upload, fallback to VP9 WebM
+  const mimeTypes = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm'
+  ];
+  const selectedMime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const ext = selectedMime.includes('mp4') ? 'mp4' : 'webm';
 
+  const recorder = new MediaRecorder(stream, {
+    mimeType: selectedMime,
+    videoBitsPerSecond: 16000000 // 16 Mbps for crisp 1080p60 motion
+  });
+
+  const chunks = [];
   recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
   recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/webm' });
+    const blob = new Blob(chunks, { type: selectedMime });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'photo_merge_evolution.webm';
+    a.download = `instagram_reel_merge_1080p60.${ext}`;
     a.click();
     document.getElementById('recordBtn').disabled = false;
   };
